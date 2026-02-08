@@ -172,16 +172,22 @@ app.post('/api/chat', async (req, res) => {
     }
 
     let tokenCount = 0;
+    let chunkCount = 0;
     console.log('[Chat] Starting to read stream...');
     
     while (!aborted) {
       const { done, value } = await reader.read();
       if (done) {
-        console.log(`[Chat] Stream ended, total tokens sent: ${tokenCount}`);
+        console.log(`[Chat] Stream ended, chunks: ${chunkCount}, tokens sent: ${tokenCount}`);
         break;
       }
 
-      sseBuffer += decoder.decode(value, { stream: true });
+      chunkCount++;
+      const chunk = decoder.decode(value, { stream: true });
+      if (chunkCount <= 3) {
+        console.log(`[Chat] Chunk ${chunkCount} (${chunk.length} chars): ${chunk.slice(0, 200).replace(/\n/g, '\\n')}`);
+      }
+      sseBuffer += chunk;
 
       const lines = sseBuffer.split('\n');
       sseBuffer = lines.pop() || '';

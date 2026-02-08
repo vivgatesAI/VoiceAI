@@ -103,11 +103,10 @@ app.post('/api/chat', async (req, res) => {
     };
 
     // Venice-specific: strip thinking tags for reasoning models
-    if (chatModel.includes('glm') || chatModel.includes('qwen3') || chatModel.includes('deepseek')) {
-      requestBody.venice_parameters = {
-        strip_thinking_response: true
-      };
-    }
+    // Apply to all models with reasoning capability (grok, glm, qwen, deepseek, kimi, etc.)
+    requestBody.venice_parameters = {
+      strip_thinking_response: true
+    };
 
     console.log(`[Chat] Model: ${chatModel}, User: "${messages[messages.length - 1]?.content?.slice(0, 50)}..."`);
 

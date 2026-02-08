@@ -485,7 +485,11 @@ body {
 /* ─── RESPONSIVE ───────────────────────────────────────────────────────────── */
 @media (max-width: 600px) {
   :root {
-    --hud-padding: 10px;
+    --hud-padding: 8px;
+  }
+
+  .hud-container {
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 8px);
   }
 
   .hud-subtitle {
@@ -502,21 +506,50 @@ body {
   }
 
   #orb-canvas {
-    width: min(280px, 80vw);
-    height: min(280px, 80vw);
+    width: min(220px, 55vw);
+    height: min(220px, 55vw);
+  }
+
+  .visualizer-area {
+    flex: 0 0 auto;
+    min-height: 180px;
   }
 
   .transcript-panel {
-    max-height: 18vh;
+    flex: 1;
+    max-height: none;
+    min-height: 120px;
+  }
+
+  .hud-footer {
+    padding: 8px 12px;
+    flex-wrap: wrap;
+    gap: 8px;
   }
 
   .control-btn {
-    padding: 8px 14px;
+    padding: 10px 12px;
     font-size: 0.55rem;
+    flex: 1;
+    justify-content: center;
+    min-width: 0;
+  }
+
+  .control-btn.primary {
+    flex: 2;
   }
 
   .btn-label {
     display: none;
+  }
+
+  .audio-level {
+    display: none;
+  }
+
+  .state-label {
+    font-size: 0.6rem;
+    margin-top: 8px;
   }
 }
 

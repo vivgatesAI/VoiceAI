@@ -1,0 +1,18 @@
+{
+  "name": "jarvis-voice-assistant",
+  "version": "1.0.0",
+  "description": "JARVIS - Voice-to-voice AI assistant powered by Venice AI",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "express": "^4.21.0",
+    "dotenv": "^16.4.0",
+    "multer": "^1.4.5-lts.1"
+  }
+}

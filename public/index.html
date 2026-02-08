@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>J.A.R.V.I.S.</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- CRT scanline overlay -->
+  <div class="scanlines"></div>
+
+  <!-- Perspective grid background -->
+  <div class="grid-bg"></div>
+
+  <!-- Vignette overlay -->
+  <div class="vignette"></div>
+
+  <!-- Main HUD container -->
+  <div class="hud-container">
+
+    <!-- ═══ TOP BAR: System Status ═══ -->
+    <header class="hud-header">
+      <div class="hud-label-group">
+        <div class="hud-label">J.A.R.V.I.S.</div>
+        <div class="hud-subtitle">JUST A RATHER VERY INTELLIGENT SYSTEM</div>
+      </div>
+      <div class="status-indicators">
+        <span class="indicator" id="mic-status">MIC</span>
+        <span class="indicator" id="net-status">NET</span>
+        <span class="indicator" id="ai-status">AI</span>
+      </div>
+      <div class="hud-time" id="clock">00:00:00</div>
+    </header>
+
+    <!-- ═══ CENTRAL VISUALIZER ═══ -->
+    <main class="visualizer-area">
+      <canvas id="orb-canvas"></canvas>
+      <div class="state-label" id="state-label">INITIALIZING</div>
+    </main>
+
+    <!-- ═══ TRANSCRIPT PANEL ═══ -->
+    <section class="transcript-panel" id="transcript-panel">
+      <div class="transcript-entry assistant">
+        <span class="transcript-prefix">JARVIS &gt;</span>
+        Systems online. How may I assist you today, sir?
+      </div>
+    </section>
+
+    <!-- ═══ BOTTOM CONTROL BAR ═══ -->
+    <footer class="hud-footer">
+      <button class="control-btn" id="listen-btn" aria-label="Push to talk">
+        <svg class="btn-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+          <line x1="12" y1="19" x2="12" y2="23"/>
+          <line x1="8" y1="23" x2="16" y2="23"/>
+        </svg>
+        <span class="btn-label" id="btn-label">HOLD TO SPEAK</span>
+      </button>
+      <div class="audio-level" id="audio-level-bar"></div>
+      <button class="control-btn small" id="mode-toggle" aria-label="Toggle interaction mode">
+        VAD
+      </button>
+    </footer>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

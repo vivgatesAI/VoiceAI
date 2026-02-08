@@ -128,10 +128,12 @@ app.post('/api/chat', async (req, res) => {
       max_tokens: 500
     };
 
-    // Venice-specific: strip thinking tags for reasoning models
-    // Apply to all models with reasoning capability (grok, glm, qwen, deepseek, kimi, etc.)
+    // Venice-specific parameters
+    const webSearch = req.body.webSearch !== false; // Default to true
     requestBody.venice_parameters = {
-      strip_thinking_response: true
+      strip_thinking_response: true,
+      enable_web_search: webSearch ? 'auto' : 'off',
+      enable_web_citations: webSearch
     };
 
     console.log(`[Chat] Model: ${chatModel}, User: "${messages[messages.length - 1]?.content?.slice(0, 50)}..."`);

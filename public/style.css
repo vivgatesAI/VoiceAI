@@ -485,14 +485,24 @@ body {
 /* ─── RESPONSIVE ───────────────────────────────────────────────────────────── */
 @media (max-width: 600px) {
   :root {
-    --hud-padding: 8px;
+    --hud-padding: 10px;
+  }
+
+  html, body {
+    overflow-y: auto;
+    overflow-x: hidden;
   }
 
   .hud-container {
     height: auto;
     min-height: 100vh;
-    min-height: 100dvh; /* Dynamic viewport height - accounts for browser chrome */
-    padding-bottom: calc(env(safe-area-inset-bottom, 20px) + 70px);
+    min-height: 100dvh;
+    padding-bottom: 90px;
+    gap: 8px;
+  }
+
+  .hud-header {
+    padding: 8px 12px;
   }
 
   .hud-subtitle {
@@ -500,69 +510,114 @@ body {
   }
 
   .hud-label {
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     letter-spacing: 3px;
   }
 
   .hud-time {
-    font-size: 0.65rem;
+    font-size: 0.7rem;
+  }
+
+  .status-indicators {
+    gap: 4px;
+  }
+
+  .indicator {
+    padding: 2px 6px;
+    font-size: 0.5rem;
   }
 
   #orb-canvas {
-    width: min(200px, 50vw);
-    height: min(200px, 50vw);
+    width: min(180px, 45vw);
+    height: min(180px, 45vw);
   }
 
   .visualizer-area {
     flex: 0 0 auto;
-    min-height: 160px;
+    min-height: 140px;
+    padding: 10px 0;
+  }
+
+  .state-label {
+    font-size: 0.55rem;
+    margin-top: 6px;
+    letter-spacing: 5px;
   }
 
   .transcript-panel {
     flex: 1;
     max-height: none;
-    min-height: 100px;
+    min-height: 150px;
+    padding: 8px 12px;
+    font-size: 0.85rem;
   }
 
+  .transcript-entry {
+    padding: 4px 0;
+    font-size: 0.8rem;
+  }
+
+  .transcript-prefix {
+    font-size: 0.5rem;
+  }
+
+  /* Fixed footer for mobile */
   .hud-footer {
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
-    padding: 10px 12px;
-    padding-bottom: calc(env(safe-area-inset-bottom, 10px) + 10px);
-    flex-wrap: wrap;
+    padding: 12px;
+    padding-bottom: max(env(safe-area-inset-bottom, 12px), 12px);
+    display: grid;
+    grid-template-columns: 1fr auto auto auto;
     gap: 8px;
     z-index: 50;
     border-radius: 0;
     border-left: none;
     border-right: none;
     border-bottom: none;
+    background: rgba(6, 12, 22, 0.95);
+    backdrop-filter: blur(10px);
   }
 
   .control-btn {
-    padding: 12px 14px;
-    font-size: 0.6rem;
-    flex: 1;
+    padding: 14px 16px;
+    font-size: 0.65rem;
     justify-content: center;
-    min-width: 0;
   }
 
   .control-btn.primary {
-    flex: 2;
+    grid-column: 1;
+  }
+
+  .control-btn.small {
+    padding: 14px 12px;
+    min-width: 44px;
   }
 
   .btn-label {
     display: none;
   }
 
+  .btn-icon {
+    width: 18px;
+    height: 18px;
+  }
+
   .audio-level {
     display: none;
   }
 
-  .state-label {
-    font-size: 0.6rem;
-    margin-top: 8px;
+  /* Settings panel mobile */
+  .settings-panel {
+    position: fixed;
+    bottom: 70px;
+    left: 10px;
+    right: 10px;
+    width: auto;
+    max-height: 60vh;
+    overflow-y: auto;
   }
 }
 
@@ -671,6 +726,62 @@ body {
   border-radius: var(--radius);
   border-left: 2px solid var(--cyan-dim);
   line-height: 1.5;
+}
+
+/* Toggle switch */
+.toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-family: var(--font-display);
+  font-size: 0.55rem;
+  letter-spacing: 2px;
+  color: var(--text-secondary);
+}
+
+.toggle-label input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 40px;
+  height: 20px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  position: relative;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.toggle-label input[type="checkbox"]::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  background: var(--text-dim);
+  border-radius: 50%;
+  transition: all var(--transition);
+}
+
+.toggle-label input[type="checkbox"]:checked {
+  background: rgba(0, 255, 136, 0.2);
+  border-color: var(--green);
+}
+
+.toggle-label input[type="checkbox"]:checked::before {
+  transform: translateX(20px);
+  background: var(--green);
+  box-shadow: 0 0 8px rgba(0, 255, 136, 0.5);
+}
+
+.toggle-text {
+  transition: color var(--transition);
+}
+
+.toggle-label input[type="checkbox"]:checked + .toggle-text {
+  color: var(--green);
 }
 
 /* ─── UTILITY: hide during init ────────────────────────────────────────────── */

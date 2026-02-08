@@ -23,6 +23,7 @@
   const Settings = {
     model: 'grok-41-fast',
     voice: 'am_adam',
+    webSearch: true,
 
     MODEL_INFO: {
       'grok-41-fast': 'xAI Grok 4.1 - Best for agentic tasks, vision support',
@@ -47,14 +48,17 @@
           const parsed = JSON.parse(saved);
           this.model = parsed.model || this.model;
           this.voice = parsed.voice || this.voice;
+          this.webSearch = parsed.webSearch !== false;
         } catch (e) {}
       }
 
       // Apply to UI
       const modelSelect = document.getElementById('model-select');
       const voiceSelect = document.getElementById('voice-select');
+      const webSearchToggle = document.getElementById('web-search-toggle');
       if (modelSelect) modelSelect.value = this.model;
       if (voiceSelect) voiceSelect.value = this.voice;
+      if (webSearchToggle) webSearchToggle.checked = this.webSearch;
       this.updateModelInfo();
     },
 
@@ -62,6 +66,7 @@
       localStorage.setItem('drishti-settings', JSON.stringify({
         model: this.model,
         voice: this.voice,
+        webSearch: this.webSearch,
       }));
     },
 
@@ -73,6 +78,11 @@
 
     setVoice(voice) {
       this.voice = voice;
+      this.save();
+    },
+
+    setWebSearch(enabled) {
+      this.webSearch = enabled;
       this.save();
     },
 
@@ -365,6 +375,7 @@
           body: JSON.stringify({
             messages: this.conversationHistory,
             model: Settings.model,
+            webSearch: Settings.webSearch,
           }),
           signal: controller.signal,
         });
@@ -792,6 +803,13 @@
       voiceSelect.addEventListener('change', (e) => {
         Settings.setVoice(e.target.value);
       });
+
+      const webSearchToggle = document.getElementById('web-search-toggle');
+      if (webSearchToggle) {
+        webSearchToggle.addEventListener('change', (e) => {
+          Settings.setWebSearch(e.target.checked);
+        });
+      }
 
       // Close settings when clicking outside
       document.addEventListener('click', (e) => {

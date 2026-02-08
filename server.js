@@ -43,8 +43,12 @@ app.post('/api/transcribe', upload.single('audio'), async (req, res) => {
       return res.status(400).json({ error: 'No audio file provided' });
     }
 
+    // Client now sends WAV audio (converted from webm on the client)
+    const mimeType = req.file.mimetype || 'audio/wav';
+    const ext = mimeType.includes('wav') ? 'wav' : mimeType.includes('mp3') ? 'mp3' : 'wav';
+
     const formData = new FormData();
-    formData.append('file', new Blob([req.file.buffer], { type: req.file.mimetype || 'audio/webm' }), 'audio.webm');
+    formData.append('file', new Blob([req.file.buffer], { type: mimeType }), `audio.${ext}`);
     formData.append('model', process.env.ASR_MODEL || 'nvidia/parakeet-tdt-0.6b-v3');
     formData.append('response_format', 'json');
     formData.append('language', 'en');

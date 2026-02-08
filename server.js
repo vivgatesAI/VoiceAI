@@ -111,19 +111,28 @@ app.post('/api/chat', async (req, res) => {
 
     console.log(`[Chat] Model: ${chatModel}, User: "${messages[messages.length - 1]?.content?.slice(0, 50)}..."`);
 
-    const response = await fetch(`${VENICE_BASE}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${API_KEY}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(requestBody)
-    });
+    let response;
+    try {
+      response = await fetch(`${VENICE_BASE}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${API_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestBody)
+      });
+      console.log(`[Chat] Venice responded with status: ${response.status}`);
+    } catch (fetchErr) {
+      console.error('[Chat] Fetch error:', fetchErr.message);
+      res.write(`data: ${JSON.stringify({ type: 'error', error: `Fetch failed: ${fetchErr.message}` })}\n\n`);
+      res.end();
+      return;
+    }
 
     if (!response.ok) {
       const errText = await response.text();
-      console.error(`Chat error ${response.status}:`, errText);
-      res.write(`data: ${JSON.stringify({ type: 'error', error: `Chat failed: ${response.status}` })}\n\n`);
+      console.error(`[Chat] Error ${response.status}:`, errText);
+      res.write(`data: ${JSON.stringify({ type: 'error', error: `Chat failed: ${response.status} - ${errText.slice(0, 100)}` })}\n\n`);
       res.end();
       return;
     }
@@ -162,9 +171,15 @@ app.post('/api/chat', async (req, res) => {
         .trim();
     }
 
+    let tokenCount = 0;
+    console.log('[Chat] Starting to read stream...');
+    
     while (!aborted) {
       const { done, value } = await reader.read();
-      if (done) break;
+      if (done) {
+        console.log(`[Chat] Stream ended, total tokens sent: ${tokenCount}`);
+        break;
+      }
 
       sseBuffer += decoder.decode(value, { stream: true });
 
@@ -174,7 +189,10 @@ app.post('/api/chat', async (req, res) => {
       for (const line of lines) {
         if (!line.startsWith('data: ')) continue;
         const payload = line.slice(6).trim();
-        if (payload === '[DONE]') continue;
+        if (payload === '[DONE]') {
+          console.log('[Chat] Received [DONE] marker');
+          continue;
+        }
 
         try {
           const parsed = JSON.parse(payload);
@@ -185,6 +203,7 @@ app.post('/api/chat', async (req, res) => {
           content = stripThinking(content);
           if (!content) continue;
 
+          tokenCount++;
           // Send each token immediately for live text display
           if (!aborted) {
             res.write(`data: ${JSON.stringify({ type: 'token', token: content })}\n\n`);

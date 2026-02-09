@@ -24,6 +24,7 @@
     model: 'grok-41-fast',
     voice: 'am_adam',
     webSearch: true,
+    ttsSpeed: 1,
 
     MODEL_INFO: {
       'grok-41-fast': 'xAI Grok 4.1 - Best for agentic tasks, vision support',
@@ -49,6 +50,7 @@
           this.model = parsed.model || this.model;
           this.voice = parsed.voice || this.voice;
           this.webSearch = parsed.webSearch !== false;
+          if (parsed.ttsSpeed) this.ttsSpeed = parsed.ttsSpeed;
         } catch (e) {}
       }
 
@@ -59,6 +61,7 @@
       if (modelSelect) modelSelect.value = this.model;
       if (voiceSelect) voiceSelect.value = this.voice;
       if (webSearchToggle) webSearchToggle.checked = this.webSearch;
+      this.updateSpeedUI();
       this.updateModelInfo();
     },
 
@@ -67,6 +70,7 @@
         model: this.model,
         voice: this.voice,
         webSearch: this.webSearch,
+        ttsSpeed: this.ttsSpeed,
       }));
     },
 
@@ -84,6 +88,18 @@
     setWebSearch(enabled) {
       this.webSearch = enabled;
       this.save();
+    },
+
+    setTtsSpeed(speed) {
+      this.ttsSpeed = speed;
+      this.save();
+      this.updateSpeedUI();
+    },
+
+    updateSpeedUI() {
+      document.querySelectorAll('.speed-btn').forEach((btn) => {
+        btn.classList.toggle('active', parseFloat(btn.dataset.speed) === this.ttsSpeed);
+      });
     },
 
     updateModelInfo() {
@@ -428,7 +444,7 @@
       const res = await fetch('/api/tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text, index, voice: Settings.voice }),
+        body: JSON.stringify({ text, index, voice: Settings.voice, speed: Settings.ttsSpeed }),
       });
       if (!res.ok) throw new Error(`TTS failed: ${res.status}`);
       return res.arrayBuffer();
@@ -723,6 +739,7 @@
     async init() {
       TranscriptUI.init();
       Settings.init();
+      this.showOnboarding();
 
       try {
         await AudioCapture.init();
@@ -810,10 +827,22 @@
           settingsPanel.classList.remove('open');
         }
       });
+
+      // TTS speed buttons
+      document.querySelectorAll('.speed-btn').forEach((sbtn) => {
+        sbtn.addEventListener('click', () => {
+          Settings.setTtsSpeed(parseFloat(sbtn.dataset.speed));
+        });
+      });
+    },
+
+    haptic(pattern) {
+      if (navigator.vibrate) navigator.vibrate(pattern);
     },
 
     handlePressStart() {
       if (this.pipelineBusy) return;
+      this.haptic(30);
       if (this.playbackContext.state === 'suspended') this.playbackContext.resume();
       if (AudioCapture.audioContext.state === 'suspended') AudioCapture.audioContext.resume();
 
@@ -823,7 +852,10 @@
     },
 
     handlePressEnd() {
-      if (StateMachine.current === State.LISTENING) this.stopListeningAndProcess();
+      if (StateMachine.current === State.LISTENING) {
+        this.haptic([15, 30, 15]);
+        this.stopListeningAndProcess();
+      }
     },
 
     startListening() {
@@ -920,6 +952,21 @@
       StateMachine.transition(State.IDLE);
       OrbVisualizer.setState('idle');
       OrbVisualizer.setEnergy(0);
+    },
+
+    showOnboarding() {
+      if (localStorage.getItem('drishti-onboarded')) {
+        const overlay = document.getElementById('onboarding-overlay');
+        if (overlay) overlay.classList.add('hidden');
+        return;
+      }
+      const dismiss = document.getElementById('onboarding-dismiss');
+      if (dismiss) {
+        dismiss.addEventListener('click', () => {
+          localStorage.setItem('drishti-onboarded', '1');
+          document.getElementById('onboarding-overlay').classList.add('hidden');
+        });
+      }
     },
 
     startClock() {

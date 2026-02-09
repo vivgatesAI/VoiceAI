@@ -344,13 +344,14 @@ app.post('/api/chat', async (req, res) => {
 
 app.post('/api/tts', async (req, res) => {
   try {
-    const { text, index, voice } = req.body;
+    const { text, index, voice, speed } = req.body;
     if (!text || text.trim().length === 0) {
       return res.status(400).json({ error: 'No text provided' });
     }
 
     // Use voice from request, fall back to env var, then default
     const ttsVoice = voice || process.env.TTS_VOICE || 'am_adam';
+    const ttsSpeed = Math.max(0.5, Math.min(2, parseFloat(speed) || 1.05));
 
     const response = await fetch(`${VENICE_BASE}/audio/speech`, {
       method: 'POST',
@@ -363,7 +364,7 @@ app.post('/api/tts', async (req, res) => {
         input: text,
         voice: ttsVoice,
         response_format: 'mp3',
-        speed: 1.05
+        speed: ttsSpeed
       })
     });
 

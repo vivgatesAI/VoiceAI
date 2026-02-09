@@ -19,6 +19,52 @@
   <!-- Vignette overlay -->
   <div class="vignette"></div>
 
+  <!-- Onboarding overlay (first visit) -->
+  <div class="onboarding-overlay" id="onboarding-overlay">
+    <div class="onboarding-card">
+      <div class="onboarding-title">WELCOME TO DRISHTI</div>
+      <div class="onboarding-steps">
+        <div class="onboarding-step">
+          <div class="onboarding-icon">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+              <line x1="12" y1="19" x2="12" y2="23"/>
+              <line x1="8" y1="23" x2="16" y2="23"/>
+            </svg>
+          </div>
+          <div class="onboarding-text">
+            <strong>Hold the mic button</strong> to speak, release to send. You can also hold <strong>Spacebar</strong> on desktop.
+          </div>
+        </div>
+        <div class="onboarding-step">
+          <div class="onboarding-icon">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+              <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+            </svg>
+          </div>
+          <div class="onboarding-text">
+            <strong>Tap TTS</strong> to hear responses spoken aloud. Tap again to disable.
+          </div>
+        </div>
+        <div class="onboarding-step">
+          <div class="onboarding-icon">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+            </svg>
+          </div>
+          <div class="onboarding-text">
+            <strong>Tap Settings</strong> to choose AI model, voice, and playback speed.
+          </div>
+        </div>
+      </div>
+      <button class="onboarding-dismiss" id="onboarding-dismiss">GOT IT</button>
+    </div>
+  </div>
+
   <!-- Main HUD container -->
   <div class="hud-container">
 
@@ -83,6 +129,15 @@
           <option value="bf_emma">Emma (British Female)</option>
           <option value="bm_george">George (British Male)</option>
         </select>
+      </div>
+      <div class="settings-group">
+        <label for="speed-select">TTS SPEED</label>
+        <div class="speed-control">
+          <button class="speed-btn" data-speed="0.75">0.75x</button>
+          <button class="speed-btn active" data-speed="1">1x</button>
+          <button class="speed-btn" data-speed="1.25">1.25x</button>
+          <button class="speed-btn" data-speed="1.5">1.5x</button>
+        </div>
       </div>
       <div class="settings-group">
         <label class="toggle-label">

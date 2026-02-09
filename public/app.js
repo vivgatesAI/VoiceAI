@@ -24,6 +24,7 @@
     model: 'grok-41-fast',
     voice: 'am_adam',
     webSearch: true,
+    ttsSpeed: 1,
 
     MODEL_INFO: {
       'grok-41-fast': 'xAI Grok 4.1 - Best for agentic tasks, vision support',
@@ -49,6 +50,7 @@
           this.model = parsed.model || this.model;
           this.voice = parsed.voice || this.voice;
           this.webSearch = parsed.webSearch !== false;
+          if (parsed.ttsSpeed) this.ttsSpeed = parsed.ttsSpeed;
         } catch (e) {}
       }
 
@@ -59,6 +61,7 @@
       if (modelSelect) modelSelect.value = this.model;
       if (voiceSelect) voiceSelect.value = this.voice;
       if (webSearchToggle) webSearchToggle.checked = this.webSearch;
+      this.updateSpeedUI();
       this.updateModelInfo();
     },
 
@@ -67,6 +70,7 @@
         model: this.model,
         voice: this.voice,
         webSearch: this.webSearch,
+        ttsSpeed: this.ttsSpeed,
       }));
     },
 
@@ -84,6 +88,18 @@
     setWebSearch(enabled) {
       this.webSearch = enabled;
       this.save();
+    },
+
+    setTtsSpeed(speed) {
+      this.ttsSpeed = speed;
+      this.save();
+      this.updateSpeedUI();
+    },
+
+    updateSpeedUI() {
+      document.querySelectorAll('.speed-btn').forEach((btn) => {
+        btn.classList.toggle('active', parseFloat(btn.dataset.speed) === this.ttsSpeed);
+      });
     },
 
     updateModelInfo() {
@@ -136,7 +152,16 @@
       mic.className = 'indicator' + (state === State.LISTENING ? ' active' : '');
       ai.className = 'indicator' + (state === State.PROCESSING ? ' warning' : (state === State.STREAMING || state === State.SPEAKING) ? ' active' : '');
 
-      document.getElementById('listen-btn').classList.toggle('active', state === State.LISTENING);
+      const listenBtn = document.getElementById('listen-btn');
+      listenBtn.classList.toggle('active', state === State.LISTENING);
+
+      // Update mic ring animation
+      const micRing = document.getElementById('mic-ring');
+      if (micRing) {
+        micRing.className = 'mic-ring';
+        if (state === State.LISTENING) micRing.classList.add('listening');
+        else if (state === State.PROCESSING) micRing.classList.add('processing');
+      }
     },
   };
 
@@ -283,8 +308,6 @@
     monitor() {
       if (!this.enabled) return;
       const rms = AudioCapture.getRMSLevel();
-      const levelPct = Math.min(100, rms * 3500);
-      document.getElementById('audio-level-bar').style.setProperty('--level', levelPct + '%');
       OrbVisualizer.setEnergy(rms * 12);
 
       if (rms > CONFIG.SPEECH_THRESHOLD) {
@@ -421,7 +444,7 @@
       const res = await fetch('/api/tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text, index, voice: Settings.voice }),
+        body: JSON.stringify({ text, index, voice: Settings.voice, speed: Settings.ttsSpeed }),
       });
       if (!res.ok) throw new Error(`TTS failed: ${res.status}`);
       return res.arrayBuffer();
@@ -707,7 +730,6 @@
   // ═══════════════════════════════════════════════════════════════════════════
 
   const Drishti = {
-    vadMode: false,  // default to PTT for reliability
     ttsEnabled: false,
     playbackContext: null,
     currentQueue: null,
@@ -717,6 +739,7 @@
     async init() {
       TranscriptUI.init();
       Settings.init();
+      this.showOnboarding();
 
       try {
         await AudioCapture.init();
@@ -728,9 +751,7 @@
         document.getElementById('net-status').classList.add('active');
         StateMachine.transition(State.IDLE);
 
-        // Default to PTT mode
         document.getElementById('btn-label').textContent = 'HOLD TO SPEAK';
-        document.getElementById('mode-toggle').textContent = 'PTT';
       } catch (err) {
         console.error('Drishti init failed:', err);
         document.getElementById('state-label').textContent = 'MIC ERROR';
@@ -747,7 +768,7 @@
       btn.addEventListener('mousedown', (e) => { e.preventDefault(); this.handlePressStart(); });
       btn.addEventListener('mouseup', (e) => { e.preventDefault(); this.handlePressEnd(); });
       btn.addEventListener('mouseleave', () => {
-        if (StateMachine.current === State.LISTENING && !this.vadMode) this.handlePressEnd();
+        if (StateMachine.current === State.LISTENING) this.handlePressEnd();
       });
       btn.addEventListener('touchstart', (e) => { e.preventDefault(); this.handlePressStart(); });
       btn.addEventListener('touchend', (e) => { e.preventDefault(); this.handlePressEnd(); });
@@ -763,22 +784,11 @@
         if (e.code === 'Space') { e.preventDefault(); spaceDown = false; this.handlePressEnd(); }
       });
 
-      // Mode toggle (VAD/PTT)
-      document.getElementById('mode-toggle').addEventListener('click', () => {
-        this.vadMode = !this.vadMode;
-        const toggle = document.getElementById('mode-toggle');
-        toggle.textContent = this.vadMode ? 'VAD' : 'PTT';
-        toggle.classList.toggle('active', this.vadMode);
-        document.getElementById('btn-label').textContent = this.vadMode ? 'VOICE ACTIVE' : 'HOLD TO SPEAK';
-        if (this.vadMode) this.startVADMode(); else VAD.stop();
-      });
-
       // TTS toggle
       document.getElementById('tts-toggle').addEventListener('click', () => {
         this.ttsEnabled = !this.ttsEnabled;
         const ttsBtn = document.getElementById('tts-toggle');
         ttsBtn.classList.toggle('active', this.ttsEnabled);
-        ttsBtn.textContent = this.ttsEnabled ? 'TTS ON' : 'TTS';
       });
 
       // Settings panel
@@ -817,10 +827,22 @@
           settingsPanel.classList.remove('open');
         }
       });
+
+      // TTS speed buttons
+      document.querySelectorAll('.speed-btn').forEach((sbtn) => {
+        sbtn.addEventListener('click', () => {
+          Settings.setTtsSpeed(parseFloat(sbtn.dataset.speed));
+        });
+      });
+    },
+
+    haptic(pattern) {
+      if (navigator.vibrate) navigator.vibrate(pattern);
     },
 
     handlePressStart() {
       if (this.pipelineBusy) return;
+      this.haptic(30);
       if (this.playbackContext.state === 'suspended') this.playbackContext.resume();
       if (AudioCapture.audioContext.state === 'suspended') AudioCapture.audioContext.resume();
 
@@ -830,22 +852,10 @@
     },
 
     handlePressEnd() {
-      if (StateMachine.current === State.LISTENING && !this.vadMode) this.stopListeningAndProcess();
-    },
-
-    startVADMode() {
-      if (StateMachine.current !== State.IDLE) return;
-      VAD.start({
-        onSpeechStart: () => {
-          if (StateMachine.current === State.IDLE) {
-            if (this.playbackContext.state === 'suspended') this.playbackContext.resume();
-            this.startListening();
-          }
-        },
-        onSpeechEnd: () => {
-          if (StateMachine.current === State.LISTENING) this.stopListeningAndProcess();
-        },
-      });
+      if (StateMachine.current === State.LISTENING) {
+        this.haptic([15, 30, 15]);
+        this.stopListeningAndProcess();
+      }
     },
 
     startListening() {
@@ -942,7 +952,21 @@
       StateMachine.transition(State.IDLE);
       OrbVisualizer.setState('idle');
       OrbVisualizer.setEnergy(0);
-      if (this.vadMode) this.startVADMode();
+    },
+
+    showOnboarding() {
+      if (localStorage.getItem('drishti-onboarded')) {
+        const overlay = document.getElementById('onboarding-overlay');
+        if (overlay) overlay.classList.add('hidden');
+        return;
+      }
+      const dismiss = document.getElementById('onboarding-dismiss');
+      if (dismiss) {
+        dismiss.addEventListener('click', () => {
+          localStorage.setItem('drishti-onboarded', '1');
+          document.getElementById('onboarding-overlay').classList.add('hidden');
+        });
+      }
     },
 
     startClock() {

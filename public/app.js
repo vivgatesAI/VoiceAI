@@ -4,19 +4,20 @@
   const statusEl = document.getElementById('status');
   const btn = document.getElementById('ptt');
   const inboxEl = document.getElementById('inbox');
+  const micStatus = document.getElementById('mic-status');
+  const aiStatus = document.getElementById('ai-status');
+  const netStatus = document.getElementById('net-status');
+  const clockEl = document.getElementById('clock');
 
   const STATE = {
-    IDLE: 'Ready',
-    LISTENING: 'Listening…',
-    PROCESSING: 'Processing…',
-    SENT: 'Sent to Telegram',
-    ERROR: 'Error'
+    IDLE: 'READY',
+    LISTENING: 'LISTENING…',
+    PROCESSING: 'PROCESSING…',
+    SENT: 'SENT',
+    ERROR: 'ERROR'
   };
 
-  const CONFIG = {
-    MIN_RECORDING_DURATION: 350,
-    FFT_SIZE: 2048,
-  };
+  const CONFIG = { MIN_RECORDING_DURATION: 350, FFT_SIZE: 2048 };
 
   const AudioCapture = {
     stream: null,
@@ -37,7 +38,6 @@
       this.analyser.fftSize = CONFIG.FFT_SIZE;
       this.analyser.smoothingTimeConstant = 0.3;
       source.connect(this.analyser);
-
       const types = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus', 'audio/mp4'];
       this.mimeType = types.find((t) => MediaRecorder.isTypeSupported(t)) || '';
     },
@@ -57,9 +57,7 @@
       return new Promise((resolve) => {
         if (!this.recorder || this.recorder.state !== 'recording') { resolve(null); return; }
         if (Date.now() - this.recordingStartTime < CONFIG.MIN_RECORDING_DURATION) {
-          this.recorder.stop();
-          resolve(null);
-          return;
+          this.recorder.stop(); resolve(null); return;
         }
         this.recorder.onstop = () => {
           resolve(new Blob(this.chunks, { type: this.mimeType || 'audio/webm' }));
@@ -128,6 +126,7 @@
     if (recording) return;
     recording = true;
     btn.classList.add('recording');
+    micStatus.classList.add('active');
     setStatus(STATE.LISTENING);
     AudioCapture.startRecording();
   }
@@ -136,29 +135,22 @@
     if (!recording) return;
     recording = false;
     btn.classList.remove('recording');
+    micStatus.classList.remove('active');
     setStatus(STATE.PROCESSING);
+    aiStatus.classList.add('active');
     const audioBlob = await AudioCapture.stopRecording();
-    if (!audioBlob) { setStatus(STATE.IDLE); return; }
+    if (!audioBlob) { setStatus(STATE.IDLE); aiStatus.classList.remove('active'); return; }
 
     try {
       const { text } = await API.transcribe(audioBlob);
-      if (!text || !text.trim()) { setStatus(STATE.IDLE); return; }
+      if (!text || !text.trim()) { setStatus(STATE.IDLE); aiStatus.classList.remove('active'); return; }
       setStatus(STATE.SENT);
       setTimeout(() => setStatus(STATE.IDLE), 1200);
     } catch (e) {
       setStatus(STATE.ERROR);
       setTimeout(() => setStatus(STATE.IDLE), 2000);
-    }
-  }
-
-  async function init() {
-    try {
-      await AudioCapture.init();
-      setStatus(STATE.IDLE);
-      pollInbox();
-      setInterval(pollInbox, 5000);
-    } catch (e) {
-      setStatus('Microphone blocked');
+    } finally {
+      aiStatus.classList.remove('active');
     }
   }
 
@@ -176,12 +168,31 @@
 
   async function pollInbox() {
     try {
+      netStatus.classList.add('active');
       const data = await API.inbox();
       renderInbox(data.messages || []);
-    } catch (e) {}
+    } catch (e) {
+      netStatus.classList.remove('active');
+    }
   }
 
-  // Mouse + touch
+  function startClock() {
+    const update = () => { clockEl.textContent = new Date().toLocaleTimeString('en-US', { hour12: false }); };
+    update(); setInterval(update, 1000);
+  }
+
+  async function init() {
+    try {
+      await AudioCapture.init();
+      setStatus(STATE.IDLE);
+      startClock();
+      pollInbox();
+      setInterval(pollInbox, 5000);
+    } catch (e) {
+      setStatus('MIC BLOCKED');
+    }
+  }
+
   btn.addEventListener('mousedown', (e) => { e.preventDefault(); handlePressStart(); });
   btn.addEventListener('mouseup', (e) => { e.preventDefault(); handlePressEnd(); });
   btn.addEventListener('mouseleave', () => { if (recording) handlePressEnd(); });

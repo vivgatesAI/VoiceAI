@@ -1,24 +1,30 @@
 * { box-sizing: border-box; }
 body {
-  margin: 0; font-family: Inter, sans-serif; background: #0b0d10; color: #e6e6e6; min-height: 100vh; display: grid; place-items: center;
+  margin: 0; font-family: 'Share Tech Mono', monospace; background: #050709; color: #d7e3ee; min-height: 100vh;
 }
-.container { width: 100%; display: flex; justify-content: center; padding: 24px; }
-.card {
-  width: 100%; max-width: 520px; background: #11151a; border: 1px solid #20262e; border-radius: 16px; padding: 28px; text-align: center;
-  box-shadow: 0 12px 40px rgba(0,0,0,0.45);
-}
-.title { font-size: 24px; font-weight: 700; margin-bottom: 6px; }
-.subtitle { font-size: 13px; color: #9aa4b2; margin-bottom: 18px; }
-.status { font-size: 14px; color: #cbd5e1; margin: 12px 0 18px; }
-.ptt {
-  width: 100%; padding: 16px 18px; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; color: #fff;
-  background: #d9272e; cursor: pointer; transition: transform .06s ease, background .2s ease;
-}
-.ptt:active, .ptt.recording { background: #ff3b3f; transform: scale(0.99); }
-.hint { font-size: 12px; color: #8b95a5; margin-top: 12px; }
-.inbox { margin-top: 18px; text-align: left; background: #0f1318; border: 1px solid #1c222b; border-radius: 12px; padding: 12px; min-height: 120px; max-height: 280px; overflow-y: auto; }
-.inbox .empty { color: #6b7280; font-size: 12px; text-align: center; padding: 24px 0; }
-.msg { padding: 8px 6px; border-bottom: 1px solid #1f2630; }
+.scanlines { position: fixed; inset: 0; background: repeating-linear-gradient(0deg, rgba(255,255,255,0.02), rgba(255,255,255,0.02) 1px, transparent 1px, transparent 3px); pointer-events: none; mix-blend-mode: soft-light; }
+.grid-bg { position: fixed; inset: 0; background: radial-gradient(circle at center, rgba(0,255,255,0.08), transparent 40%), linear-gradient(transparent 95%, rgba(0,255,255,0.07) 96%), linear-gradient(90deg, transparent 95%, rgba(0,255,255,0.07) 96%); background-size: 100% 100%, 40px 40px, 40px 40px; opacity: 0.35; }
+.vignette { position: fixed; inset: 0; background: radial-gradient(circle at center, transparent 40%, rgba(0,0,0,0.8) 75%); pointer-events: none; }
+
+.hud-container { max-width: 980px; margin: 0 auto; padding: 28px; }
+.hud-header { display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(0,255,255,0.2); padding: 12px 18px; border-radius: 10px; background: rgba(8,12,16,0.7); }
+.hud-label { font-family: Orbitron, sans-serif; letter-spacing: 6px; font-size: 18px; color: #7af6ff; }
+.hud-subtitle { font-size: 11px; color: #7aa5b8; margin-top: 4px; }
+.status-indicators { display: flex; gap: 8px; }
+.indicator { padding: 4px 8px; border: 1px solid rgba(0,255,255,0.25); border-radius: 6px; font-size: 11px; color: #7af6ff; }
+.hud-time { font-size: 12px; color: #7aa5b8; }
+
+.visualizer-area { margin: 26px 0; padding: 26px; border: 1px solid rgba(0,255,255,0.2); border-radius: 12px; background: rgba(6,10,14,0.7); text-align: center; }
+.state-label { font-size: 16px; letter-spacing: 2px; margin-bottom: 16px; color: #a7f3ff; }
+.mic-btn { width: 100%; max-width: 420px; padding: 18px; font-size: 16px; font-weight: 700; color: #0b1014; background: #7af6ff; border: none; border-radius: 10px; cursor: pointer; box-shadow: 0 0 20px rgba(122,246,255,0.35); }
+.mic-btn.recording { background: #ff3b3f; color: #fff; box-shadow: 0 0 24px rgba(255,59,63,0.5); }
+.hint { margin-top: 10px; font-size: 12px; color: #7aa5b8; }
+
+.inbox-panel { border: 1px solid rgba(0,255,255,0.2); border-radius: 12px; background: rgba(6,10,14,0.7); padding: 16px; }
+.panel-title { font-size: 12px; color: #7af6ff; letter-spacing: 2px; margin-bottom: 10px; }
+.inbox { max-height: 260px; overflow-y: auto; font-size: 12px; }
+.inbox .empty { color: #7aa5b8; text-align: center; padding: 18px 0; }
+.msg { padding: 8px; border-bottom: 1px solid rgba(0,255,255,0.15); }
 .msg:last-child { border-bottom: none; }
-.meta { font-size: 11px; color: #93a4b8; margin-bottom: 4px; }
-.text { font-size: 13px; color: #e5e7eb; }
+.meta { color: #7aa5b8; margin-bottom: 4px; }
+.text { color: #d7e3ee; }

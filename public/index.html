@@ -3,26 +3,42 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VoiceAI Push‑to‑Talk</title>
+  <title>DRISHTI HUD</title>
   <link rel="stylesheet" href="style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="icon" href="/favicon.ico" />
 </head>
 <body>
-  <div class="container">
-    <div class="card">
-      <div class="title">VoiceAI</div>
-      <div class="subtitle">Push to talk → transcribe → send to Telegram</div>
+  <div class="scanlines"></div>
+  <div class="grid-bg"></div>
+  <div class="vignette"></div>
 
-      <div class="status" id="status">Ready</div>
+  <div class="hud-container">
+    <header class="hud-header">
+      <div class="hud-label-group">
+        <div class="hud-label">D R I S H T I</div>
+        <div class="hud-subtitle">VOICE RELAY HUD</div>
+      </div>
+      <div class="status-indicators">
+        <span class="indicator" id="mic-status">MIC</span>
+        <span class="indicator" id="net-status">NET</span>
+        <span class="indicator" id="ai-status">AI</span>
+      </div>
+      <div class="hud-time" id="clock">00:00:00</div>
+    </header>
 
-      <button class="ptt" id="ptt">Hold to Speak</button>
+    <main class="visualizer-area">
+      <div class="state-label" id="status">READY</div>
+      <button class="mic-btn" id="ptt" aria-label="Hold to speak">HOLD TO SPEAK</button>
+      <div class="hint">Press and hold, then release to send to Telegram</div>
+    </main>
 
-      <div class="hint">Press and hold, then release to send</div>
-
+    <section class="inbox-panel">
+      <div class="panel-title">INBOX (TELEGRAM)</div>
       <div class="inbox" id="inbox"></div>
-    </div>
+    </section>
   </div>
 
   <script src="app.js"></script>

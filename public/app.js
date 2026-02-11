@@ -205,8 +205,13 @@
   btn.addEventListener('mousedown', (e) => { e.preventDefault(); handlePressStart(); });
   btn.addEventListener('mouseup', (e) => { e.preventDefault(); handlePressEnd(); });
   btn.addEventListener('mouseleave', () => { if (recording) handlePressEnd(); });
-  btn.addEventListener('touchstart', (e) => { e.preventDefault(); handlePressStart(); });
-  btn.addEventListener('touchend', (e) => { e.preventDefault(); handlePressEnd(); });
+
+  // Touch + Pointer support (mobile)
+  btn.addEventListener('touchstart', (e) => { e.preventDefault(); handlePressStart(); }, { passive: false });
+  btn.addEventListener('touchend', (e) => { e.preventDefault(); handlePressEnd(); }, { passive: false });
+  btn.addEventListener('touchcancel', () => { if (recording) handlePressEnd(); }, { passive: false });
+  btn.addEventListener('pointerdown', (e) => { e.preventDefault(); handlePressStart(); });
+  btn.addEventListener('pointerup', (e) => { e.preventDefault(); handlePressEnd(); });
 
   // Keyboard support
   let spaceDown = false;

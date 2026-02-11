@@ -11,7 +11,33 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 25 
 const VENICE_BASE = 'https://api.venice.ai/api/v1';
 const API_KEY = process.env.VENICE_API_KEY;
 
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
+
 const agent = new https.Agent({ keepAlive: true, maxSockets: 10, maxFreeSockets: 5 });
+
+async function relayToTelegram(text, sender = 'VoiceAI') {
+  if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) return;
+  if (!text || !text.trim()) return;
+  const payload = {
+    chat_id: TELEGRAM_CHAT_ID,
+    text: sender ? `[${sender}] ${text}` : text,
+  };
+  try {
+    const resp = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!resp.ok) {
+      const errText = await resp.text();
+      console.error(`Telegram relay failed ${resp.status}:`, errText);
+    }
+  } catch (err) {
+    console.error('Telegram relay error:', err);
+  }
+}
+
 
 app.use(express.json({ limit: '1mb' }));
 app.use(express.static(path.join(__dirname, 'public'), {
@@ -69,7 +95,10 @@ app.post('/api/transcribe', upload.single('audio'), async (req, res) => {
     }
 
     const data = await response.json();
-    res.json({ text: data.text || '' });
+    const text = data.text || '';
+    // Relay transcribed text to Telegram
+    await relayToTelegram(text, 'VoiceAI');
+    res.json({ text });
   } catch (err) {
     console.error('Transcribe error:', err);
     res.status(500).json({ error: err.message });
@@ -340,7 +369,27 @@ app.post('/api/chat', async (req, res) => {
   }
 });
 
-// ─── ROUTE 3: TTS (Text-to-Speech) ───────────────────────────────────────────
+// ─── ROUTE 3: TELEGRAM CHAT ID (TEMP) ───────────────────────────────────────
+
+app.get('/api/telegram-chat-id', async (req, res) => {
+  try {
+    if (!TELEGRAM_BOT_TOKEN) return res.status(400).json({ error: 'Missing TELEGRAM_BOT_TOKEN' });
+    const resp = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getUpdates`);
+    const data = await resp.json();
+    if (!data.result || data.result.length === 0) {
+      return res.status(404).json({ error: 'No updates found. Send a message to the bot first.' });
+    }
+    // Grab the most recent update with a message
+    const last = [...data.result].reverse().find(u => u.message && u.message.chat && u.message.chat.id);
+    if (!last) return res.status(404).json({ error: 'No message updates found.' });
+    res.json({ chat_id: last.message.chat.id, from: last.message.from?.username || last.message.from?.id });
+  } catch (err) {
+    console.error('getUpdates error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── ROUTE 4: TTS (Text-to-Speech) ───────────────────────────────────────────
 
 app.post('/api/tts', async (req, res) => {
   try {

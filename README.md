@@ -107,7 +107,7 @@ voice-to-voice/
 ### 2. Clone and Install
 
 ```bash
-git clone https://github.com/vivmuk/VoiceAI.git
+git clone https://github.com/vivgatesAI/VoiceAI.git
 cd VoiceAI
 npm install
 ```
@@ -120,6 +120,10 @@ Create a `.env` file:
 VENICE_API_KEY=your_api_key_here
 CHAT_MODEL=grok-41-fast
 TTS_VOICE=am_adam
+
+# Telegram relay (for website-to-chat)
+TELEGRAM_BOT_TOKEN=your_bot_token
+TELEGRAM_CHAT_ID=your_chat_id
 ```
 
 ### 4. Run Locally

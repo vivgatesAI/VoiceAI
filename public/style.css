@@ -4,7 +4,7 @@ body {
   margin: 0; font-family: 'Share Tech Mono', monospace; background: #050505; color: #ffe8d1; min-height: 100vh;
 }
 .scanlines { position: fixed; inset: 0; background: repeating-linear-gradient(0deg, rgba(255,255,255,0.02), rgba(255,255,255,0.02) 1px, transparent 1px, transparent 3px); pointer-events: none; mix-blend-mode: soft-light; }
-.grid-bg { position: fixed; inset: 0; background: radial-gradient(circle at center, rgba(255,122,24,0.08), transparent 40%), linear-gradient(transparent 95%, rgba(255,122,24,0.08) 96%), linear-gradient(90deg, transparent 95%, rgba(255,122,24,0.08) 96%); background-size: 100% 100%, 48px 48px, 48px 48px; opacity: 0.35; }
+.grid-bg { position: fixed; inset: 0; background: radial-gradient(circle at center, rgba(255,122,24,0.08), transparent 40%), linear-gradient(transparent 95%, rgba(255,122,24,0.08) 96%), linear-gradient(90deg, transparent 95%, rgba(255,122,24,0.08) 96%); background-size: 100% 100%, 48px 48px, 48px 48px; opacity: 0.35; pointer-events: none; }
 .vignette { position: fixed; inset: 0; background: radial-gradient(circle at center, transparent 40%, rgba(0,0,0,0.85) 75%); pointer-events: none; }
 
 .login-overlay { position: fixed; inset: 0; display: grid; place-items: center; background: rgba(0,0,0,0.85); z-index: 20; }
@@ -21,8 +21,9 @@ body {
 .hud-header { display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,122,24,0.3); padding: 12px 18px; border-radius: 10px; background: rgba(10,8,6,0.7); }
 .hud-label { font-family: Orbitron, sans-serif; letter-spacing: 6px; font-size: 18px; color: var(--orange); }
 .hud-subtitle { font-size: 11px; color: #c0895b; margin-top: 4px; }
-.status-indicators { display: flex; gap: 8px; }
-.indicator { padding: 4px 8px; border: 1px solid rgba(255,122,24,0.4); border-radius: 6px; font-size: 11px; color: var(--orange); }
+.status-indicators { display: flex; gap: 8px; align-items: center; }
+.indicator { padding: 4px 8px; border: 1px solid rgba(255,122,24,0.4); border-radius: 6px; font-size: 11px; color: var(--orange); background: rgba(255,122,24,0.08); }
+.indicator.active { box-shadow: 0 0 10px rgba(255,122,24,0.7); }
 .hud-time { font-size: 12px; color: #c0895b; }
 
 .visualizer-area { margin: 26px 0; padding: 26px; border: 1px solid rgba(255,122,24,0.3); border-radius: 12px; background: rgba(10,8,6,0.7); text-align: center; }
@@ -41,6 +42,6 @@ body {
 .text { color: #ffe8d1; }
 
 .chat-controls { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; }
-.chat-controls input { padding: 10px; border-radius: 8px; border: 1px solid rgba(255,122,24,0.4); background: #111; color: #fff; }
-.chat-controls button { padding: 10px 14px; border-radius: 8px; border: none; background: var(--orange); color: #1a0f05; font-weight: 700; cursor: pointer; }
+.chat-controls input { padding: 12px; border-radius: 8px; border: 1px solid rgba(255,122,24,0.6); background: #0e0e0e; color: #fff; font-size: 12px; }
+.chat-controls button { padding: 12px 14px; border-radius: 8px; border: none; background: var(--orange); color: #1a0f05; font-weight: 700; cursor: pointer; box-shadow: 0 0 14px rgba(255,122,24,0.6); }
 .chat-hint { margin-top: 8px; font-size: 11px; color: #c0895b; }

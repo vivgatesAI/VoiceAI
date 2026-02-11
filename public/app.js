@@ -260,6 +260,11 @@
     window.open(url.toString(), '_blank', 'noopener');
   });
 
+  // Auto-fill from query params when present
+  const params = new URLSearchParams(window.location.search);
+  if (gatewayUrlInput && params.get('gw')) gatewayUrlInput.value = params.get('gw');
+  if (gatewayTokenInput && params.get('token')) gatewayTokenInput.value = params.get('token');
+
   btn.addEventListener('mousedown', (e) => { e.preventDefault(); handlePressStart(); });
   btn.addEventListener('mouseup', (e) => { e.preventDefault(); handlePressEnd(); });
   btn.addEventListener('mouseleave', () => { if (recording) handlePressEnd(); });

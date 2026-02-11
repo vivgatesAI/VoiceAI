@@ -1,186 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>D R I S H T I</title>
-  <link rel="stylesheet" href="style.css">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VoiceAI Push‑to‑Talk</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
 </head>
 <body>
-  <!-- CRT scanline overlay -->
-  <div class="scanlines"></div>
+  <div class="container">
+    <div class="card">
+      <div class="title">VoiceAI</div>
+      <div class="subtitle">Push to talk → transcribe → send to Telegram</div>
 
-  <!-- Perspective grid background -->
-  <div class="grid-bg"></div>
+      <div class="status" id="status">Ready</div>
 
-  <!-- Vignette overlay -->
-  <div class="vignette"></div>
+      <button class="ptt" id="ptt">Hold to Speak</button>
 
-  <!-- Onboarding overlay (first visit) -->
-  <div class="onboarding-overlay" id="onboarding-overlay">
-    <div class="onboarding-card">
-      <div class="onboarding-title">WELCOME TO DRISHTI</div>
-      <div class="onboarding-steps">
-        <div class="onboarding-step">
-          <div class="onboarding-icon">
-            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
-              <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-              <line x1="12" y1="19" x2="12" y2="23"/>
-              <line x1="8" y1="23" x2="16" y2="23"/>
-            </svg>
-          </div>
-          <div class="onboarding-text">
-            <strong>Hold the mic button</strong> to speak, release to send. You can also hold <strong>Spacebar</strong> on desktop.
-          </div>
-        </div>
-        <div class="onboarding-step">
-          <div class="onboarding-icon">
-            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5">
-              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
-              <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
-              <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
-            </svg>
-          </div>
-          <div class="onboarding-text">
-            <strong>Tap TTS</strong> to hear responses spoken aloud. Tap again to disable.
-          </div>
-        </div>
-        <div class="onboarding-step">
-          <div class="onboarding-icon">
-            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5">
-              <circle cx="12" cy="12" r="3"/>
-              <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
-            </svg>
-          </div>
-          <div class="onboarding-text">
-            <strong>Tap Settings</strong> to choose AI model, voice, and playback speed.
-          </div>
-        </div>
-      </div>
-      <button class="onboarding-dismiss" id="onboarding-dismiss">GOT IT</button>
+      <div class="hint">Press and hold, then release to send</div>
     </div>
-  </div>
-
-  <!-- Main HUD container -->
-  <div class="hud-container">
-
-    <!-- ═══ TOP BAR: System Status ═══ -->
-    <header class="hud-header">
-      <div class="hud-label-group">
-        <div class="hud-label">D R I S H T I</div>
-        <div class="hud-subtitle">DYNAMIC REASONING INTELLIGENT SYSTEM FOR HOLISTIC TECHNOLOGICAL INSIGHT</div>
-      </div>
-      <div class="status-indicators">
-        <span class="indicator" id="mic-status">MIC</span>
-        <span class="indicator" id="net-status">NET</span>
-        <span class="indicator" id="ai-status">AI</span>
-      </div>
-      <div class="hud-time" id="clock">00:00:00</div>
-    </header>
-
-    <!-- ═══ CENTRAL VISUALIZER ═══ -->
-    <main class="visualizer-area">
-      <canvas id="orb-canvas"></canvas>
-      <div class="state-label" id="state-label">INITIALIZING</div>
-    </main>
-
-    <!-- ═══ TRANSCRIPT PANEL ═══ -->
-    <section class="transcript-panel" id="transcript-panel">
-      <div class="transcript-entry assistant">
-        <span class="transcript-prefix">DRISHTI &gt;</span>
-        Systems online. How may I assist you today?
-      </div>
-    </section>
-
-    <!-- ═══ SETTINGS PANEL ═══ -->
-    <div class="settings-panel" id="settings-panel">
-      <div class="settings-header">
-        <span>CONFIGURATION</span>
-        <button class="settings-close" id="settings-close">×</button>
-      </div>
-      <div class="settings-group">
-        <label for="model-select">AI MODEL</label>
-        <select id="model-select" class="settings-select">
-          <option value="grok-41-fast">Grok 4.1 Fast</option>
-          <option value="qwen3-4b">Venice Small (Fastest)</option>
-          <option value="qwen3-next-80b">Qwen 3 Next 80B</option>
-          <option value="zai-org-glm-4.7-flash">GLM 4.7 Flash</option>
-          <option value="zai-org-glm-4.7">GLM 4.7 (Most Intelligent)</option>
-          <option value="llama-3.3-70b">Llama 3.3 70B</option>
-          <option value="deepseek-v3.2">DeepSeek v3.2</option>
-          <option value="mistral-31-24b">Mistral 31 24B</option>
-          <option value="gemini-3-flash-preview">Gemini 3 Flash</option>
-          <option value="kimi-k2-5">Kimi K2.5</option>
-          <option value="claude-sonnet-45">Claude Sonnet 4.5</option>
-          <option value="venice-uncensored">Venice Uncensored</option>
-        </select>
-      </div>
-      <div class="settings-group">
-        <label for="voice-select">TTS VOICE</label>
-        <select id="voice-select" class="settings-select">
-          <option value="am_adam">Adam (Male)</option>
-          <option value="af_bella">Bella (Female)</option>
-          <option value="af_nicole">Nicole (Female)</option>
-          <option value="am_michael">Michael (Male)</option>
-          <option value="bf_emma">Emma (British Female)</option>
-          <option value="bm_george">George (British Male)</option>
-        </select>
-      </div>
-      <div class="settings-group">
-        <label for="speed-select">TTS SPEED</label>
-        <div class="speed-control">
-          <button class="speed-btn" data-speed="0.75">0.75x</button>
-          <button class="speed-btn active" data-speed="1">1x</button>
-          <button class="speed-btn" data-speed="1.25">1.25x</button>
-          <button class="speed-btn" data-speed="1.5">1.5x</button>
-        </div>
-      </div>
-      <div class="settings-group">
-        <label class="toggle-label">
-          <input type="checkbox" id="web-search-toggle" checked>
-          <span class="toggle-text">WEB SEARCH</span>
-        </label>
-      </div>
-      <div class="settings-info" id="model-info">
-        Select a model to see details
-      </div>
-    </div>
-
-    <!-- ═══ BOTTOM CONTROL BAR ═══ -->
-    <footer class="hud-footer">
-      <button class="control-btn-side" id="settings-btn" aria-label="Settings">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5">
-          <circle cx="12" cy="12" r="3"/>
-          <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
-        </svg>
-        <span class="btn-side-label">SETTINGS</span>
-      </button>
-      <div class="mic-btn-wrapper">
-        <div class="mic-ring" id="mic-ring"></div>
-        <button class="mic-btn" id="listen-btn" aria-label="Hold to speak">
-          <svg class="mic-icon" viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
-            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-            <line x1="12" y1="19" x2="12" y2="23"/>
-            <line x1="8" y1="23" x2="16" y2="23"/>
-          </svg>
-        </button>
-        <span class="mic-label" id="btn-label">HOLD TO SPEAK</span>
-      </div>
-      <button class="control-btn-side" id="tts-toggle" aria-label="Toggle text-to-speech">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5">
-          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
-          <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
-          <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
-        </svg>
-        <span class="btn-side-label">TTS</span>
-      </button>
-    </footer>
-
   </div>
 
   <script src="app.js"></script>

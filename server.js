@@ -16,6 +16,9 @@ const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 
 const agent = new https.Agent({ keepAlive: true, maxSockets: 10, maxFreeSockets: 5 });
 
+let telegramInbox = [];
+let lastUpdateId = 0;
+
 async function relayToTelegram(text, sender = 'VoiceAI') {
   if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) return;
   if (!text || !text.trim()) return;
@@ -36,6 +39,27 @@ async function relayToTelegram(text, sender = 'VoiceAI') {
   } catch (err) {
     console.error('Telegram relay error:', err);
   }
+}
+
+async function pullTelegramUpdates() {
+  if (!TELEGRAM_BOT_TOKEN) return [];
+  const url = new URL(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getUpdates`);
+  if (lastUpdateId) url.searchParams.set('offset', String(lastUpdateId + 1));
+  const resp = await fetch(url.toString());
+  const data = await resp.json();
+  const updates = Array.isArray(data.result) ? data.result : [];
+  if (updates.length === 0) return [];
+  lastUpdateId = updates[updates.length - 1].update_id;
+  const messages = updates
+    .map(u => u.message)
+    .filter(m => m && m.text)
+    .map(m => ({
+      id: m.message_id,
+      from: m.from?.username || m.from?.first_name || 'telegram',
+      text: m.text,
+      ts: m.date ? m.date * 1000 : Date.now()
+    }));
+  return messages;
 }
 
 
@@ -369,7 +393,21 @@ app.post('/api/chat', async (req, res) => {
   }
 });
 
-// ─── ROUTE 3: TELEGRAM CHAT ID (TEMP) ───────────────────────────────────────
+// ─── ROUTE 3: TELEGRAM INBOX (poll getUpdates) ──────────────────────────────
+
+app.get('/api/telegram-inbox', async (req, res) => {
+  try {
+    const messages = await pullTelegramUpdates();
+    // store in memory (last 100)
+    telegramInbox = telegramInbox.concat(messages).slice(-100);
+    res.json({ messages: telegramInbox });
+  } catch (err) {
+    console.error('telegram-inbox error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── ROUTE 4: TELEGRAM CHAT ID (TEMP) ───────────────────────────────────────
 
 app.get('/api/telegram-chat-id', async (req, res) => {
   try {
@@ -379,7 +417,6 @@ app.get('/api/telegram-chat-id', async (req, res) => {
     if (!data.result || data.result.length === 0) {
       return res.status(404).json({ error: 'No updates found. Send a message to the bot first.' });
     }
-    // Grab the most recent update with a message
     const last = [...data.result].reverse().find(u => u.message && u.message.chat && u.message.chat.id);
     if (!last) return res.status(404).json({ error: 'No message updates found.' });
     res.json({ chat_id: last.message.chat.id, from: last.message.from?.username || last.message.from?.id });
@@ -389,7 +426,7 @@ app.get('/api/telegram-chat-id', async (req, res) => {
   }
 });
 
-// ─── ROUTE 4: TTS (Text-to-Speech) ───────────────────────────────────────────
+// ─── ROUTE 5: TTS (Text-to-Speech) ───────────────────────────────────────────
 
 app.post('/api/tts', async (req, res) => {
   try {

@@ -1,10 +1,10 @@
 * { box-sizing: border-box; }
 body {
-  margin: 0; font-family: Inter, sans-serif; background: #0b0d10; color: #e6e6e6; height: 100vh; display: grid; place-items: center;
+  margin: 0; font-family: Inter, sans-serif; background: #0b0d10; color: #e6e6e6; min-height: 100vh; display: grid; place-items: center;
 }
 .container { width: 100%; display: flex; justify-content: center; padding: 24px; }
 .card {
-  width: 100%; max-width: 420px; background: #11151a; border: 1px solid #20262e; border-radius: 16px; padding: 28px; text-align: center;
+  width: 100%; max-width: 520px; background: #11151a; border: 1px solid #20262e; border-radius: 16px; padding: 28px; text-align: center;
   box-shadow: 0 12px 40px rgba(0,0,0,0.45);
 }
 .title { font-size: 24px; font-weight: 700; margin-bottom: 6px; }
@@ -16,3 +16,9 @@ body {
 }
 .ptt:active, .ptt.recording { background: #ff3b3f; transform: scale(0.99); }
 .hint { font-size: 12px; color: #8b95a5; margin-top: 12px; }
+.inbox { margin-top: 18px; text-align: left; background: #0f1318; border: 1px solid #1c222b; border-radius: 12px; padding: 12px; min-height: 120px; max-height: 280px; overflow-y: auto; }
+.inbox .empty { color: #6b7280; font-size: 12px; text-align: center; padding: 24px 0; }
+.msg { padding: 8px 6px; border-bottom: 1px solid #1f2630; }
+.msg:last-child { border-bottom: none; }
+.meta { font-size: 11px; color: #93a4b8; margin-bottom: 4px; }
+.text { font-size: 13px; color: #e5e7eb; }

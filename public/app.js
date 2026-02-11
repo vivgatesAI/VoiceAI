@@ -3,6 +3,7 @@
 
   const statusEl = document.getElementById('status');
   const btn = document.getElementById('ptt');
+  const inboxEl = document.getElementById('inbox');
 
   const STATE = {
     IDLE: 'Ready',
@@ -13,9 +14,6 @@
   };
 
   const CONFIG = {
-    SPEECH_THRESHOLD: 0.018,
-    SILENCE_THRESHOLD: 0.009,
-    SILENCE_DURATION: 900,
     MIN_RECORDING_DURATION: 350,
     FFT_SIZE: 2048,
   };
@@ -114,14 +112,17 @@
       const res = await fetch('/api/transcribe', { method: 'POST', body: formData });
       if (!res.ok) throw new Error(`Transcription failed: ${res.status}`);
       return res.json();
+    },
+    async inbox() {
+      const res = await fetch('/api/telegram-inbox');
+      if (!res.ok) return { messages: [] };
+      return res.json();
     }
   };
 
   let recording = false;
 
-  function setStatus(text) {
-    statusEl.textContent = text;
-  }
+  function setStatus(text) { statusEl.textContent = text; }
 
   async function handlePressStart() {
     if (recording) return;
@@ -154,9 +155,30 @@
     try {
       await AudioCapture.init();
       setStatus(STATE.IDLE);
+      pollInbox();
+      setInterval(pollInbox, 5000);
     } catch (e) {
       setStatus('Microphone blocked');
     }
+  }
+
+  function renderInbox(messages) {
+    if (!inboxEl) return;
+    if (!messages || messages.length === 0) {
+      inboxEl.innerHTML = '<div class="empty">No messages yet</div>';
+      return;
+    }
+    inboxEl.innerHTML = messages.slice(-20).map(m => {
+      const time = new Date(m.ts).toLocaleTimeString();
+      return `<div class="msg"><div class="meta">${m.from} • ${time}</div><div class="text">${m.text}</div></div>`;
+    }).join('');
+  }
+
+  async function pollInbox() {
+    try {
+      const data = await API.inbox();
+      renderInbox(data.messages || []);
+    } catch (e) {}
   }
 
   // Mouse + touch

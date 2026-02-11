@@ -41,8 +41,11 @@
 
     <main class="visualizer-area">
       <div class="state-label" id="status">READY</div>
-      <button class="mic-btn" id="ptt" aria-label="Hold to speak">HOLD TO SPEAK</button>
-      <div class="hint">Press and hold, then release to send to OpenClaw</div>
+      <div class="relay-box">
+        <textarea id="relay-input" rows="4" placeholder="Type your message to OpenClaw..."></textarea>
+        <button class="send-btn" id="send-btn">SEND</button>
+      </div>
+      <div class="hint">Text relay to OpenClaw</div>
     </main>
 
     <section class="inbox-panel">

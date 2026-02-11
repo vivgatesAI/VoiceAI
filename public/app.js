@@ -2,7 +2,8 @@
   'use strict';
 
   const statusEl = document.getElementById('status');
-  const btn = document.getElementById('ptt');
+  const relayInput = document.getElementById('relay-input');
+  const sendBtn = document.getElementById('send-btn');
   const inboxEl = document.getElementById('inbox');
   const micStatus = document.getElementById('mic-status');
   const aiStatus = document.getElementById('ai-status');
@@ -124,16 +125,16 @@
       if (!res.ok) return { ok: false };
       return res.json();
     },
-    async transcribe(audioBlob) {
-      const wavBlob = await WavEncoder.blobToWav(audioBlob);
-      const formData = new FormData();
-      formData.append('audio', wavBlob, 'recording.wav');
-      const res = await fetch('/api/transcribe', {
+    async sendText(text) {
+      const res = await fetch('/api/relay-text', {
         method: 'POST',
-        headers: AUTH_PASSWORD ? { 'x-web-password': AUTH_PASSWORD } : {},
-        body: formData
+        headers: {
+          'Content-Type': 'application/json',
+          ...(AUTH_PASSWORD ? { 'x-web-password': AUTH_PASSWORD } : {})
+        },
+        body: JSON.stringify({ text })
       });
-      if (!res.ok) throw new Error(`Transcription failed: ${res.status}`);
+      if (!res.ok) throw new Error(`Relay failed: ${res.status}`);
       return res.json();
     },
     async inbox() {
@@ -149,37 +150,14 @@
 
   function setStatus(text) { statusEl.textContent = text; }
 
-  async function handlePressStart() {
-    if (recording) return;
-    try {
-      if (!AudioCapture.stream) {
-        setStatus('MIC PERMISSION…');
-        await AudioCapture.init();
-      }
-    } catch (e) {
-      setStatus('MIC BLOCKED');
-      return;
-    }
-    recording = true;
-    btn.classList.add('recording');
-    micStatus.classList.add('active');
-    setStatus(STATE.LISTENING);
-    AudioCapture.startRecording();
-  }
-
-  async function handlePressEnd() {
-    if (!recording) return;
-    recording = false;
-    btn.classList.remove('recording');
-    micStatus.classList.remove('active');
+  async function sendTextRelay() {
+    const text = relayInput?.value.trim();
+    if (!text) return;
     setStatus(STATE.PROCESSING);
     aiStatus.classList.add('active');
-    const audioBlob = await AudioCapture.stopRecording();
-    if (!audioBlob) { setStatus(STATE.IDLE); aiStatus.classList.remove('active'); return; }
-
     try {
-      const { text } = await API.transcribe(audioBlob);
-      if (!text || !text.trim()) { setStatus(STATE.IDLE); aiStatus.classList.remove('active'); return; }
+      await API.sendText(text);
+      relayInput.value = '';
       setStatus(STATE.SENT);
       setTimeout(() => setStatus(STATE.IDLE), 1200);
     } catch (e) {
@@ -276,22 +254,12 @@
   if (gatewayUrlInput && params.get('gw')) gatewayUrlInput.value = params.get('gw');
   if (gatewayTokenInput && params.get('token')) gatewayTokenInput.value = params.get('token');
 
-  btn.addEventListener('mousedown', (e) => { e.preventDefault(); handlePressStart(); });
-  btn.addEventListener('mouseup', (e) => { e.preventDefault(); handlePressEnd(); });
-  btn.addEventListener('mouseleave', () => { if (recording) handlePressEnd(); });
-
-  btn.addEventListener('touchstart', (e) => { e.preventDefault(); handlePressStart(); }, { passive: false });
-  btn.addEventListener('touchend', (e) => { e.preventDefault(); handlePressEnd(); }, { passive: false });
-  btn.addEventListener('touchcancel', () => { if (recording) handlePressEnd(); }, { passive: false });
-  btn.addEventListener('pointerdown', (e) => { e.preventDefault(); handlePressStart(); });
-  btn.addEventListener('pointerup', (e) => { e.preventDefault(); handlePressEnd(); });
-
-  let spaceDown = false;
-  document.addEventListener('keydown', (e) => {
-    if (e.code === 'Space' && !e.repeat && !spaceDown) { e.preventDefault(); spaceDown = true; handlePressStart(); }
-  });
-  document.addEventListener('keyup', (e) => {
-    if (e.code === 'Space') { e.preventDefault(); spaceDown = false; handlePressEnd(); }
+  sendBtn?.addEventListener('click', sendTextRelay);
+  relayInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+      e.preventDefault();
+      sendTextRelay();
+    }
   });
 
 })();

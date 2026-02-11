@@ -28,8 +28,9 @@ body {
 
 .visualizer-area { margin: 26px 0; padding: 26px; border: 1px solid rgba(255,122,24,0.3); border-radius: 12px; background: rgba(10,8,6,0.7); text-align: center; }
 .state-label { font-size: 16px; letter-spacing: 2px; margin-bottom: 16px; color: #ffd3aa; }
-.mic-btn { width: 100%; max-width: 420px; padding: 18px; font-size: 16px; font-weight: 700; color: #1a0f05; background: var(--orange); border: none; border-radius: 10px; cursor: pointer; box-shadow: 0 0 22px var(--orange-glow); }
-.mic-btn.recording { background: #ff3b3f; color: #fff; box-shadow: 0 0 24px rgba(255,59,63,0.6); }
+.relay-box { display: grid; gap: 10px; max-width: 640px; margin: 0 auto; }
+#relay-input { width: 100%; padding: 14px; border-radius: 10px; border: 1px solid rgba(255,122,24,0.6); background: #0e0e0e; color: #fff; font-size: 14px; resize: vertical; min-height: 110px; }
+.send-btn { width: 100%; padding: 14px; font-size: 15px; font-weight: 700; color: #1a0f05; background: var(--orange); border: none; border-radius: 10px; cursor: pointer; box-shadow: 0 0 22px var(--orange-glow); }
 .hint { margin-top: 10px; font-size: 12px; color: #c0895b; }
 
 .inbox-panel, .chat-panel { border: 1px solid rgba(255,122,24,0.3); border-radius: 12px; background: rgba(10,8,6,0.7); padding: 16px; margin-top: 16px; }

@@ -146,40 +146,16 @@ Important guidelines:
 
 // ─── ROUTE 1: TRANSCRIBE (ASR) ───────────────────────────────────────────────
 
-app.post('/api/transcribe', upload.single('audio'), async (req, res) => {
+app.post('/api/relay-text', async (req, res) => {
   try {
-    if (!req.file) {
-      return res.status(400).json({ error: 'No audio file provided' });
+    const { text } = req.body || {};
+    if (!text || !text.trim()) {
+      return res.status(400).json({ error: 'Missing text' });
     }
-
-    const mimeType = req.file.mimetype || 'audio/wav';
-    const ext = mimeType.includes('wav') ? 'wav' : mimeType.includes('mp3') ? 'mp3' : 'wav';
-
-    const formData = new FormData();
-    formData.append('file', new Blob([req.file.buffer], { type: mimeType }), `audio.${ext}`);
-    formData.append('model', process.env.ASR_MODEL || 'nvidia/parakeet-tdt-0.6b-v3');
-    formData.append('response_format', 'json');
-    formData.append('language', 'en');
-
-    const response = await fetch(`${VENICE_BASE}/audio/transcriptions`, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${API_KEY}` },
-      body: formData
-    });
-
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error(`ASR error ${response.status}:`, errText);
-      return res.status(response.status).json({ error: `Transcription failed: ${response.status}`, detail: errText });
-    }
-
-    const data = await response.json();
-    const text = data.text || '';
-    // Relay transcribed text directly to OpenClaw gateway
     await relayToOpenClaw(text, 'VoiceAI');
-    res.json({ text });
+    res.json({ ok: true });
   } catch (err) {
-    console.error('Transcribe error:', err);
+    console.error('Relay error:', err);
     res.status(500).json({ error: err.message });
   }
 });

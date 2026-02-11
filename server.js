@@ -426,6 +426,19 @@ app.get('/api/telegram-chat-id', async (req, res) => {
   }
 });
 
+// Clear webhook (if set) to allow getUpdates
+app.get('/api/telegram-clear-webhook', async (req, res) => {
+  try {
+    if (!TELEGRAM_BOT_TOKEN) return res.status(400).json({ error: 'Missing TELEGRAM_BOT_TOKEN' });
+    const resp = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/deleteWebhook`);
+    const data = await resp.json();
+    res.json(data);
+  } catch (err) {
+    console.error('deleteWebhook error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ─── ROUTE 5: TTS (Text-to-Speech) ───────────────────────────────────────────
 
 app.post('/api/tts', async (req, res) => {

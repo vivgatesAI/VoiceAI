@@ -407,39 +407,7 @@ app.get('/api/telegram-inbox', async (req, res) => {
   }
 });
 
-// ─── ROUTE 4: TELEGRAM CHAT ID (TEMP) ───────────────────────────────────────
-
-app.get('/api/telegram-chat-id', async (req, res) => {
-  try {
-    if (!TELEGRAM_BOT_TOKEN) return res.status(400).json({ error: 'Missing TELEGRAM_BOT_TOKEN' });
-    const resp = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getUpdates`);
-    const data = await resp.json();
-    if (!data.result || data.result.length === 0) {
-      return res.status(404).json({ error: 'No updates found. Send a message to the bot first.' });
-    }
-    const last = [...data.result].reverse().find(u => u.message && u.message.chat && u.message.chat.id);
-    if (!last) return res.status(404).json({ error: 'No message updates found.' });
-    res.json({ chat_id: last.message.chat.id, from: last.message.from?.username || last.message.from?.id });
-  } catch (err) {
-    console.error('getUpdates error:', err);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// Clear webhook (if set) to allow getUpdates
-app.get('/api/telegram-clear-webhook', async (req, res) => {
-  try {
-    if (!TELEGRAM_BOT_TOKEN) return res.status(400).json({ error: 'Missing TELEGRAM_BOT_TOKEN' });
-    const resp = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/deleteWebhook`);
-    const data = await resp.json();
-    res.json(data);
-  } catch (err) {
-    console.error('deleteWebhook error:', err);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// ─── ROUTE 5: TTS (Text-to-Speech) ───────────────────────────────────────────
+// ─── ROUTE 4: TTS (Text-to-Speech) ───────────────────────────────────────────
 
 app.post('/api/tts', async (req, res) => {
   try {

@@ -31,7 +31,7 @@ body {
 .mic-btn.recording { background: #ff3b3f; color: #fff; box-shadow: 0 0 24px rgba(255,59,63,0.6); }
 .hint { margin-top: 10px; font-size: 12px; color: #c0895b; }
 
-.inbox-panel { border: 1px solid rgba(255,122,24,0.3); border-radius: 12px; background: rgba(10,8,6,0.7); padding: 16px; }
+.inbox-panel, .chat-panel { border: 1px solid rgba(255,122,24,0.3); border-radius: 12px; background: rgba(10,8,6,0.7); padding: 16px; margin-top: 16px; }
 .panel-title { font-size: 12px; color: var(--orange); letter-spacing: 2px; margin-bottom: 10px; }
 .inbox { max-height: 260px; overflow-y: auto; font-size: 12px; }
 .inbox .empty { color: #c0895b; text-align: center; padding: 18px 0; }
@@ -39,3 +39,8 @@ body {
 .msg:last-child { border-bottom: none; }
 .meta { color: #c0895b; margin-bottom: 4px; }
 .text { color: #ffe8d1; }
+
+.chat-controls { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; }
+.chat-controls input { padding: 10px; border-radius: 8px; border: 1px solid rgba(255,122,24,0.4); background: #111; color: #fff; }
+.chat-controls button { padding: 10px 14px; border-radius: 8px; border: none; background: var(--orange); color: #1a0f05; font-weight: 700; cursor: pointer; }
+.chat-hint { margin-top: 8px; font-size: 11px; color: #c0895b; }

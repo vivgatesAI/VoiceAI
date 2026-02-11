@@ -15,6 +15,10 @@
   const loginError = document.getElementById('login-error');
   const hud = document.getElementById('hud');
 
+  const gatewayUrlInput = document.getElementById('gateway-url');
+  const gatewayTokenInput = document.getElementById('gateway-token');
+  const openChatBtn = document.getElementById('open-chat');
+
   const STATE = {
     IDLE: 'READY',
     LISTENING: 'LISTENING…',
@@ -234,11 +238,27 @@
     loginOverlay.classList.add('hidden');
     hud.classList.remove('hidden');
     loginError.textContent = '';
+
+    // Prefill gateway URL + token for convenience
+    if (gatewayUrlInput) gatewayUrlInput.value = localStorage.getItem('gatewayUrl') || '';
+    if (gatewayTokenInput) gatewayTokenInput.value = localStorage.getItem('gatewayToken') || '';
+
     init();
   }
 
   loginBtn.addEventListener('click', tryLogin);
   loginInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') tryLogin(); });
+
+  openChatBtn.addEventListener('click', () => {
+    const gw = gatewayUrlInput.value.trim();
+    if (!gw) return;
+    const token = gatewayTokenInput.value.trim();
+    localStorage.setItem('gatewayUrl', gw);
+    if (token) localStorage.setItem('gatewayToken', token);
+    const url = new URL(gw);
+    if (token) url.searchParams.set('token', token);
+    window.open(url.toString(), '_blank', 'noopener');
+  });
 
   btn.addEventListener('mousedown', (e) => { e.preventDefault(); handlePressStart(); });
   btn.addEventListener('mouseup', (e) => { e.preventDefault(); handlePressEnd(); });

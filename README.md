@@ -129,6 +129,10 @@ TELEGRAM_CHAT_ID=your_chat_id
 OPENCLAW_HOOK_URL=https://<your-openclaw-host>/hooks/wake
 OPENCLAW_HOOK_TOKEN=OPENCLAW-HOOK-<your-token>
 
+# Public gateway URL + token to auto-fill chat panel
+OPENCLAW_PUBLIC_URL=https://xxxx.trycloudflare.com
+OPENCLAW_PUBLIC_TOKEN=<gateway-token>
+
 # Basic auth for website
 WEB_PASSWORD=surat123
 ```

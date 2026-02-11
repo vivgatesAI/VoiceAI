@@ -224,6 +224,17 @@
       pollInbox();
       setInterval(pollInbox, 5000);
     }
+    // Load server-provided defaults for gateway URL/token
+    try {
+      const res = await fetch('/api/gateway-defaults', {
+        headers: AUTH_PASSWORD ? { 'x-web-password': AUTH_PASSWORD } : {}
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (gatewayUrlInput && data.url) gatewayUrlInput.value = data.url;
+        if (gatewayTokenInput && data.token) gatewayTokenInput.value = data.token;
+      }
+    } catch (_) {}
   }
 
   async function tryLogin() {

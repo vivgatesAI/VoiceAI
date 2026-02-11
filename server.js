@@ -17,6 +17,9 @@ const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 const OPENCLAW_HOOK_URL = process.env.OPENCLAW_HOOK_URL; // e.g., https://<your-openclaw-host>/hooks/wake
 const OPENCLAW_HOOK_TOKEN = process.env.OPENCLAW_HOOK_TOKEN;
 
+const OPENCLAW_PUBLIC_URL = process.env.OPENCLAW_PUBLIC_URL; // e.g., https://xxxx.trycloudflare.com
+const OPENCLAW_PUBLIC_TOKEN = process.env.OPENCLAW_PUBLIC_TOKEN;
+
 const WEB_PASSWORD = process.env.WEB_PASSWORD || 'surat123';
 
 const agent = new https.Agent({ keepAlive: true, maxSockets: 10, maxFreeSockets: 5 });
@@ -107,6 +110,13 @@ app.use('/api', (req, res, next) => {
   const pass = req.headers['x-web-password'];
   if (pass === WEB_PASSWORD) return next();
   return res.status(401).json({ error: 'Unauthorized' });
+});
+
+app.get('/api/gateway-defaults', (req, res) => {
+  res.json({
+    url: OPENCLAW_PUBLIC_URL || '',
+    token: OPENCLAW_PUBLIC_TOKEN || ''
+  });
 });
 
 app.use(express.static(path.join(__dirname, 'public'), {

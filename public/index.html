@@ -8,14 +8,24 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700&display=swap" rel="stylesheet" />
-  <link rel="icon" href="/favicon.ico" />
 </head>
 <body>
   <div class="scanlines"></div>
   <div class="grid-bg"></div>
   <div class="vignette"></div>
 
-  <div class="hud-container">
+  <!-- Login overlay -->
+  <div class="login-overlay" id="login-overlay">
+    <div class="login-card">
+      <div class="login-title">ACCESS REQUIRED</div>
+      <div class="login-sub">Enter passcode to unlock DRISHTI</div>
+      <input type="password" id="login-password" placeholder="Passcode" />
+      <button id="login-btn">UNLOCK</button>
+      <div class="login-error" id="login-error"></div>
+    </div>
+  </div>
+
+  <div class="hud-container hidden" id="hud">
     <header class="hud-header">
       <div class="hud-label-group">
         <div class="hud-label">D R I S H T I</div>
@@ -32,7 +42,7 @@
     <main class="visualizer-area">
       <div class="state-label" id="status">READY</div>
       <button class="mic-btn" id="ptt" aria-label="Hold to speak">HOLD TO SPEAK</button>
-      <div class="hint">Press and hold, then release to send to Telegram</div>
+      <div class="hint">Press and hold, then release to send to OpenClaw</div>
     </main>
 
     <section class="inbox-panel">

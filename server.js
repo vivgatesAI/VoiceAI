@@ -92,14 +92,21 @@ async function pullTelegramUpdates() {
 
 app.use(express.json({ limit: '1mb' }));
 
-// Basic password gate for website UI
-app.use((req, res, next) => {
-  if (req.path.startsWith('/api')) return next();
-  const auth = req.headers.authorization || '';
-  const ok = auth === `Bearer ${WEB_PASSWORD}`;
-  if (ok) return next();
-  res.setHeader('WWW-Authenticate', 'Basic realm="VoiceAI"');
-  res.status(401).send('Unauthorized');
+// Auth for API routes (no browser prompt)
+app.post('/api/login', (req, res) => {
+  const { password } = req.body || {};
+  if (!WEB_PASSWORD || password === WEB_PASSWORD) {
+    return res.json({ ok: true });
+  }
+  return res.status(401).json({ ok: false, error: 'Invalid password' });
+});
+
+app.use('/api', (req, res, next) => {
+  if (req.path === '/login') return next();
+  if (!WEB_PASSWORD) return next();
+  const pass = req.headers['x-web-password'];
+  if (pass === WEB_PASSWORD) return next();
+  return res.status(401).json({ error: 'Unauthorized' });
 });
 
 app.use(express.static(path.join(__dirname, 'public'), {

@@ -9,6 +9,12 @@
   const netStatus = document.getElementById('net-status');
   const clockEl = document.getElementById('clock');
 
+  const loginOverlay = document.getElementById('login-overlay');
+  const loginBtn = document.getElementById('login-btn');
+  const loginInput = document.getElementById('login-password');
+  const loginError = document.getElementById('login-error');
+  const hud = document.getElementById('hud');
+
   const STATE = {
     IDLE: 'READY',
     LISTENING: 'LISTENING…',
@@ -18,6 +24,8 @@
   };
 
   const CONFIG = { MIN_RECORDING_DURATION: 350, FFT_SIZE: 2048 };
+
+  let AUTH_PASSWORD = null;
 
   const AudioCapture = {
     stream: null,
@@ -103,16 +111,31 @@
   };
 
   const API = {
+    async login(password) {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password })
+      });
+      if (!res.ok) return { ok: false };
+      return res.json();
+    },
     async transcribe(audioBlob) {
       const wavBlob = await WavEncoder.blobToWav(audioBlob);
       const formData = new FormData();
       formData.append('audio', wavBlob, 'recording.wav');
-      const res = await fetch('/api/transcribe', { method: 'POST', body: formData });
+      const res = await fetch('/api/transcribe', {
+        method: 'POST',
+        headers: AUTH_PASSWORD ? { 'x-web-password': AUTH_PASSWORD } : {},
+        body: formData
+      });
       if (!res.ok) throw new Error(`Transcription failed: ${res.status}`);
       return res.json();
     },
     async inbox() {
-      const res = await fetch('/api/telegram-inbox');
+      const res = await fetch('/api/telegram-inbox', {
+        headers: AUTH_PASSWORD ? { 'x-web-password': AUTH_PASSWORD } : {}
+      });
       if (!res.ok) return { messages: [] };
       return res.json();
     }
@@ -191,39 +214,48 @@
   }
 
   async function init() {
-    try {
-      await AudioCapture.init();
-      setStatus(STATE.IDLE);
-      startClock();
+    setStatus(STATE.IDLE);
+    startClock();
+    if (AUTH_PASSWORD) {
       pollInbox();
       setInterval(pollInbox, 5000);
-    } catch (e) {
-      setStatus('MIC BLOCKED');
     }
   }
+
+  async function tryLogin() {
+    const pass = loginInput.value.trim();
+    if (!pass) return;
+    const res = await API.login(pass);
+    if (!res.ok) {
+      loginError.textContent = 'Invalid passcode';
+      return;
+    }
+    AUTH_PASSWORD = pass;
+    loginOverlay.classList.add('hidden');
+    hud.classList.remove('hidden');
+    loginError.textContent = '';
+    init();
+  }
+
+  loginBtn.addEventListener('click', tryLogin);
+  loginInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') tryLogin(); });
 
   btn.addEventListener('mousedown', (e) => { e.preventDefault(); handlePressStart(); });
   btn.addEventListener('mouseup', (e) => { e.preventDefault(); handlePressEnd(); });
   btn.addEventListener('mouseleave', () => { if (recording) handlePressEnd(); });
 
-  // Touch + Pointer support (mobile)
   btn.addEventListener('touchstart', (e) => { e.preventDefault(); handlePressStart(); }, { passive: false });
   btn.addEventListener('touchend', (e) => { e.preventDefault(); handlePressEnd(); }, { passive: false });
   btn.addEventListener('touchcancel', () => { if (recording) handlePressEnd(); }, { passive: false });
   btn.addEventListener('pointerdown', (e) => { e.preventDefault(); handlePressStart(); });
   btn.addEventListener('pointerup', (e) => { e.preventDefault(); handlePressEnd(); });
 
-  // Keyboard support
   let spaceDown = false;
   document.addEventListener('keydown', (e) => {
-    if (e.code === 'Space' && !e.repeat && !spaceDown) {
-      e.preventDefault(); spaceDown = true; handlePressStart();
-    }
+    if (e.code === 'Space' && !e.repeat && !spaceDown) { e.preventDefault(); spaceDown = true; handlePressStart(); }
   });
   document.addEventListener('keyup', (e) => {
     if (e.code === 'Space') { e.preventDefault(); spaceDown = false; handlePressEnd(); }
   });
 
-  // Auto-init on DOM ready
-  document.addEventListener('DOMContentLoaded', init);
 })();

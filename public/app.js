@@ -124,6 +124,15 @@
 
   async function handlePressStart() {
     if (recording) return;
+    try {
+      if (!AudioCapture.stream) {
+        setStatus('MIC PERMISSION…');
+        await AudioCapture.init();
+      }
+    } catch (e) {
+      setStatus('MIC BLOCKED');
+      return;
+    }
     recording = true;
     btn.classList.add('recording');
     micStatus.classList.add('active');
@@ -199,5 +208,17 @@
   btn.addEventListener('touchstart', (e) => { e.preventDefault(); handlePressStart(); });
   btn.addEventListener('touchend', (e) => { e.preventDefault(); handlePressEnd(); });
 
+  // Keyboard support
+  let spaceDown = false;
+  document.addEventListener('keydown', (e) => {
+    if (e.code === 'Space' && !e.repeat && !spaceDown) {
+      e.preventDefault(); spaceDown = true; handlePressStart();
+    }
+  });
+  document.addEventListener('keyup', (e) => {
+    if (e.code === 'Space') { e.preventDefault(); spaceDown = false; handlePressEnd(); }
+  });
+
+  // Auto-init on DOM ready
   document.addEventListener('DOMContentLoaded', init);
 })();

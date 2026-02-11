@@ -14,10 +14,37 @@ const API_KEY = process.env.VENICE_API_KEY;
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 
+const OPENCLAW_HOOK_URL = process.env.OPENCLAW_HOOK_URL; // e.g., https://<your-openclaw-host>/hooks/wake
+const OPENCLAW_HOOK_TOKEN = process.env.OPENCLAW_HOOK_TOKEN;
+
+const WEB_PASSWORD = process.env.WEB_PASSWORD || 'surat123';
+
 const agent = new https.Agent({ keepAlive: true, maxSockets: 10, maxFreeSockets: 5 });
 
 let telegramInbox = [];
 let lastUpdateId = 0;
+
+async function relayToOpenClaw(text, sender = 'VoiceAI') {
+  if (!OPENCLAW_HOOK_URL || !OPENCLAW_HOOK_TOKEN) return;
+  if (!text || !text.trim()) return;
+  const payload = { text: sender ? `[${sender}] ${text}` : text, mode: 'now' };
+  try {
+    const resp = await fetch(OPENCLAW_HOOK_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${OPENCLAW_HOOK_TOKEN}`
+      },
+      body: JSON.stringify(payload),
+    });
+    if (!resp.ok) {
+      const errText = await resp.text();
+      console.error(`OpenClaw relay failed ${resp.status}:`, errText);
+    }
+  } catch (err) {
+    console.error('OpenClaw relay error:', err);
+  }
+}
 
 async function relayToTelegram(text, sender = 'VoiceAI') {
   if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) return;
@@ -64,6 +91,17 @@ async function pullTelegramUpdates() {
 
 
 app.use(express.json({ limit: '1mb' }));
+
+// Basic password gate for website UI
+app.use((req, res, next) => {
+  if (req.path.startsWith('/api')) return next();
+  const auth = req.headers.authorization || '';
+  const ok = auth === `Bearer ${WEB_PASSWORD}`;
+  if (ok) return next();
+  res.setHeader('WWW-Authenticate', 'Basic realm="VoiceAI"');
+  res.status(401).send('Unauthorized');
+});
+
 app.use(express.static(path.join(__dirname, 'public'), {
   etag: false,
   setHeaders(res) {
@@ -120,8 +158,8 @@ app.post('/api/transcribe', upload.single('audio'), async (req, res) => {
 
     const data = await response.json();
     const text = data.text || '';
-    // Relay transcribed text to Telegram
-    await relayToTelegram(text, 'VoiceAI');
+    // Relay transcribed text directly to OpenClaw gateway
+    await relayToOpenClaw(text, 'VoiceAI');
     res.json({ text });
   } catch (err) {
     console.error('Transcribe error:', err);

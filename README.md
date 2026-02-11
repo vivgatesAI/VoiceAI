@@ -121,9 +121,16 @@ VENICE_API_KEY=your_api_key_here
 CHAT_MODEL=grok-41-fast
 TTS_VOICE=am_adam
 
-# Telegram relay (for website-to-chat)
+# Telegram (optional inbox)
 TELEGRAM_BOT_TOKEN=your_bot_token
 TELEGRAM_CHAT_ID=your_chat_id
+
+# OpenClaw Gateway webhook (direct to this chat)
+OPENCLAW_HOOK_URL=https://<your-openclaw-host>/hooks/wake
+OPENCLAW_HOOK_TOKEN=OPENCLAW-HOOK-<your-token>
+
+# Basic auth for website
+WEB_PASSWORD=surat123
 ```
 
 ### 4. Run Locally
